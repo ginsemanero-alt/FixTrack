@@ -30,3 +30,54 @@ body {
     background: #fff;
   }
 }
+
+/* ───────────── Motion ───────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-12px) rotate(var(--r, 0deg)); }
+}
+@keyframes tape-slide {
+  from { background-position: 0 0; }
+  to { background-position: 51px 0; }
+}
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.12); }
+}
+@keyframes wrench-wobble {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
+}
+
+.anim-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-pop { animation: pop-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-float { animation: float 5s ease-in-out infinite; }
+.anim-float-slow { animation: float 6.5s ease-in-out infinite; animation-delay: -2s; }
+.anim-tape { animation: tape-slide 1.2s linear infinite; }
+.anim-blob { animation: blob-drift 12s ease-in-out infinite; }
+.anim-wobble:hover { animation: wrench-wobble 0.6s ease-in-out; }
+
+/* Scroll reveal (see components/Reveal.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--delay, 0ms);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up, .anim-pop, .anim-float, .anim-float-slow, .anim-tape, .anim-blob { animation: none; }
+  .anim-wobble:hover { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+}

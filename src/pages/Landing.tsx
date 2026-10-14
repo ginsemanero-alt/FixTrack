@@ -1,5 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import Reveal from '../components/Reveal'
 import { QRCodeSVG } from 'qrcode.react'
 import { Bell, ClipboardList, Clock, LayoutDashboard, QrCode, Wallet, Wrench } from 'lucide-react'
 
@@ -111,9 +112,9 @@ export default function Landing() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-100 font-sans text-slate-900">
       {/* NAV */}
-      <header className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 pt-6">
+      <header className="anim-fade-up mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 pt-6">
         <a href="#top" onClick={scrollTo('top')} className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-amber-400">
+          <span className="anim-wobble flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-amber-400">
             <Wrench size={22} />
           </span>
           <span className={`${display} text-2xl`}>FixTrack</span>
@@ -132,17 +133,17 @@ export default function Landing() {
       {/* HERO */}
       <section id="top" className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-10 gap-y-14 px-6 pb-20 pt-14">
         <div className="flex min-w-0 flex-[1_1_440px] flex-col items-start gap-7">
-          <span className="rounded-full bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-amber-950">
+          <span style={{ animationDelay: '100ms' }} className="anim-fade-up rounded-full bg-amber-400 px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-amber-950">
             School Facility Maintenance and Repair Management
           </span>
-          <h1 className={`${display} text-[clamp(52px,8vw,100px)] leading-[0.92] tracking-[-0.035em]`}>
+          <h1 style={{ animationDelay: '220ms' }} className={`anim-fade-up ${display} text-[clamp(52px,8vw,100px)] leading-[0.92] tracking-[-0.035em]`}>
             Scan.<br />Report.<br /><span className="text-indigo-600">Ayusin.</span>
           </h1>
-          <p className="max-w-[520px] text-xl leading-relaxed text-slate-600">
+          <p style={{ animationDelay: '380ms' }} className="anim-fade-up max-w-[520px] text-xl leading-relaxed text-slate-600">
             Bawat classroom at facility ay may sariling QR code. I-scan ito para agad maiulat ang sira. Makikita ng
             maintenance team kung ano ang aayusin, kailan ito naayos, at magkano ang nagastos.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div style={{ animationDelay: '520ms' }} className="anim-fade-up flex flex-wrap gap-3">
             <Link
               to="/login"
               className="rounded-full bg-indigo-600 px-8 py-[18px] text-base font-black text-white shadow-xl shadow-indigo-600/40 transition hover:bg-indigo-700 active:scale-95"
@@ -161,8 +162,8 @@ export default function Landing() {
 
         {/* QR card + phone */}
         <div className="flex min-w-0 flex-[1_1_400px] justify-center">
-          <div className="flex w-full max-w-[520px] flex-wrap items-center justify-center gap-7 rounded-[3.5rem] bg-slate-900 px-6 py-10">
-            <div className="flex w-[190px] -rotate-[4deg] flex-col items-center gap-3 rounded-[2rem] bg-white p-[18px]">
+          <div style={{ animationDelay: '300ms' }} className="anim-pop flex w-full max-w-[520px] flex-wrap items-center justify-center gap-7 rounded-[3.5rem] bg-slate-900 px-6 py-10">
+            <div style={{ '--r': '-4deg' } as React.CSSProperties} className="anim-float flex w-[190px] flex-col items-center gap-3 rounded-[2rem] bg-white p-[18px]">
               <QRCodeSVG value={qrValue} size={150} level="M" marginSize={0} />
               <div className="text-center leading-tight">
                 <div className={`${display} text-[17px]`}>Grade 12 - Rizal</div>
@@ -170,7 +171,7 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="flex w-[248px] max-w-full flex-col gap-3 rounded-[2.5rem] bg-white px-4 pb-5 pt-[18px] ring-[6px] ring-slate-800">
+            <div className="anim-float-slow flex w-[248px] max-w-full flex-col gap-3 rounded-[2.5rem] bg-white px-4 pb-5 pt-[18px] ring-[6px] ring-slate-800">
               <div className="rounded-[1.4rem] bg-indigo-50 px-3.5 py-3">
                 <div className="text-[9px] font-black uppercase tracking-[0.08em] text-indigo-500">Nagre-report para sa</div>
                 <div className={`${display} mt-0.5 text-[17px] leading-tight`}>Grade 12 - Rizal</div>
@@ -198,13 +199,13 @@ export default function Landing() {
       {/* maintenance tape */}
       <div
         aria-hidden="true"
-        className="h-5"
+        className="anim-tape h-5"
         style={{ background: 'repeating-linear-gradient(-45deg,#fbbf24 0,#fbbf24 18px,#0f172a 18px,#0f172a 36px)' }}
       />
 
       {/* PROBLEM / SOLUTION */}
       <section className="mx-auto flex max-w-[1200px] flex-wrap gap-6 px-6 pb-6 pt-[88px]">
-        <div className="flex min-w-0 flex-[1_1_400px] flex-col gap-6 rounded-[3.5rem] bg-slate-900 p-8 text-white sm:p-12">
+        <Reveal className="flex min-w-0 flex-[1_1_400px] flex-col gap-6 rounded-[3.5rem] bg-slate-900 p-8 text-white sm:p-12">
           <span className={`${badge} self-start bg-rose-700 text-white`}>Ang problema</span>
           <h2 className={`${display} text-balance text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]`}>
             Huli ang report, nawawala ang record.
@@ -213,8 +214,8 @@ export default function Landing() {
             <li className="flex gap-3.5"><span className="font-black text-rose-400">✕</span>Natatagalan ang pag-uulat ng sira sa classroom at facility.</li>
             <li className="flex gap-3.5"><span className="font-black text-rose-400">✕</span>Mahirap subaybayan ang mga nakaraang repair at ang ginastos dito.</li>
           </ul>
-        </div>
-        <div className="flex min-w-0 flex-[1_1_400px] flex-col gap-6 rounded-[3.5rem] bg-indigo-600 p-8 text-white sm:p-12">
+        </Reveal>
+        <Reveal delay={120} className="flex min-w-0 flex-[1_1_400px] flex-col gap-6 rounded-[3.5rem] bg-indigo-600 p-8 text-white sm:p-12">
           <span className={`${badge} self-start bg-white text-indigo-800`}>Ang FixTrack</span>
           <h2 className={`${display} text-balance text-3xl leading-[1.05] sm:text-4xl lg:text-[44px]`}>
             Isang scan, may ticket na. Bawat ayos, may tala.
@@ -223,52 +224,52 @@ export default function Landing() {
             <li className="flex gap-3.5"><span className="font-black text-amber-200">✓</span>QR code sa mismong lugar, kaya handa na ang form pag na-scan.</li>
             <li className="flex gap-3.5"><span className="font-black text-amber-200">✓</span>Nakatala ang bawat repair at gastos, kada facility at kada buwan.</li>
           </ul>
-        </div>
+        </Reveal>
       </section>
 
       {/* HOW IT WORKS */}
       <section id="how" className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pb-6 pt-24">
-        <div className="flex max-w-2xl flex-col gap-3">
+        <Reveal className="flex max-w-2xl flex-col gap-3">
           <span className={eyebrow}>Paano gumagana</span>
           <h2 className={h2}>Tatlong hakbang, mula sira hanggang tala.</h2>
-        </div>
+        </Reveal>
         <div className="flex flex-wrap gap-5">
-          {steps.map((s) => (
-            <div key={s.n} className="flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 rounded-[3rem] bg-white p-9 ring-1 ring-slate-200">
+          {steps.map((s, i) => (
+            <Reveal key={s.n} delay={i * 110} className="flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 rounded-[3rem] bg-white p-9 ring-1 ring-slate-200">
               <span className="font-mono text-[44px] font-bold leading-none text-indigo-600">{s.n}</span>
               <h3 className={`${display} text-[28px]`}>{s.title}</h3>
               <p className="text-slate-600">{s.text}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* FEATURES */}
       <section id="features" className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pb-6 pt-28">
-        <div className="flex max-w-2xl flex-col gap-3">
+        <Reveal className="flex max-w-2xl flex-col gap-3">
           <span className={eyebrow}>Features</span>
           <h2 className={h2}>Lahat ng kailangan ng maintenance office.</h2>
-        </div>
+        </Reveal>
         <div className="flex flex-wrap gap-5">
-          {features.map((f) => (
-            <div key={f.title} className={`flex min-w-0 flex-[1_1_340px] flex-col gap-4 rounded-[3.5rem] p-9 ${f.tone}`}>
+          {features.map((f, i) => (
+            <Reveal key={f.title} delay={(i % 3) * 110} className={`flex min-w-0 flex-[1_1_340px] flex-col gap-4 rounded-[3.5rem] p-9 ${f.tone}`}>
               {f.icon}
               <h3 className={`${display} text-[26px]`}>{f.title}</h3>
               <p className={f.sub}>{f.text}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* DASHBOARD PREVIEW */}
       <section id="preview" className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pb-6 pt-28">
-        <div className="flex max-w-2xl flex-col gap-3">
+        <Reveal className="flex max-w-2xl flex-col gap-3">
           <span className={eyebrow}>Dashboard</span>
           <h2 className={h2}>Isang tingin, alam mo na ang lagay.</h2>
           <p className="text-slate-600">Ito ang sample data na kasama sa demo ng system.</p>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col gap-5 rounded-[4rem] bg-slate-900 p-6 sm:p-8">
+        <Reveal className="flex flex-col gap-5 rounded-[4rem] bg-slate-900 p-6 sm:p-8">
           <div className="flex flex-wrap gap-4">
             {[
               ['Pending', '1', 'bg-amber-400 text-amber-950'],
@@ -304,38 +305,38 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* AUDIENCE */}
       <section id="audience" className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pb-6 pt-28">
-        <div className="flex max-w-2xl flex-col gap-3">
+        <Reveal className="flex max-w-2xl flex-col gap-3">
           <span className={eyebrow}>Para kanino</span>
           <h2 className={h2}>Madali para sa nag-uulat, buo para sa nag-aayos.</h2>
-        </div>
+        </Reveal>
         <div className="flex flex-wrap gap-5">
-          <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px] rounded-[3.5rem] bg-white p-8 ring-1 ring-slate-200 sm:p-11">
+          <Reveal className="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px] rounded-[3.5rem] bg-white p-8 ring-1 ring-slate-200 sm:p-11">
             <span className={`${badge} self-start bg-emerald-100 text-emerald-700`}>Walang login</span>
             <h3 className={`${display} text-[32px] leading-[1.05]`}>Estudyante, guro, at staff ng school</h3>
             <p className="text-slate-600">
               Kahit sino na makakita ng sira ay pwedeng mag-report. Camera lang ng cellphone ang kailangan. Pagkatapos
               mag-submit, may ticket number para sa follow-up.
             </p>
-          </div>
-          <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px] rounded-[3.5rem] bg-slate-900 p-8 text-white sm:p-11">
+          </Reveal>
+          <Reveal delay={120} className="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px] rounded-[3.5rem] bg-slate-900 p-8 text-white sm:p-11">
             <span className={`${badge} self-start bg-amber-400 text-amber-950`}>May login</span>
             <h3 className={`${display} text-[32px] leading-[1.05]`}>Admin at maintenance staff</h3>
             <p className="text-slate-300">
               Sila ang nagbabantay ng mga report, nag-a-assign ng gawain, nagre-record ng repair at gastos, at gumagawa
               ng QR code para sa bagong facility.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA */}
       <section id="cta" className="mx-auto max-w-[1200px] px-6 pb-14 pt-28">
-        <div className="flex flex-col items-center gap-7 rounded-[4rem] bg-indigo-600 px-10 py-[72px] text-center text-white">
+        <Reveal className="flex flex-col items-center gap-7 rounded-[4rem] bg-indigo-600 px-10 py-[72px] text-center text-white">
           <h2 className={`${display} max-w-3xl text-balance text-[clamp(40px,6vw,76px)] leading-[0.98] tracking-[-0.035em]`}>
             Itigil na ang hulihang report.
           </h2>
@@ -354,7 +355,7 @@ export default function Landing() {
               Paano ito gumagana
             </a>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <footer className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-6 pb-12 text-sm font-semibold text-slate-500">
