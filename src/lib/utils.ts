@@ -1,13 +1,14 @@
 import type { Facility, Report, Urgency, Status } from '../types'
+import { getLocale, tr } from './i18n'
 
 export const peso = (n: number) =>
-  new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 }).format(n)
+  new Intl.NumberFormat(getLocale(), { style: 'currency', currency: 'PHP', currencyDisplay: 'narrowSymbol', maximumFractionDigits: 2 }).format(n)
 
 export const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+  new Date(iso).toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' })
 
 export const fmtDateTime = (iso: string) =>
-  new Date(iso).toLocaleString('en-PH', {
+  new Date(iso).toLocaleString(getLocale(), {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -15,7 +16,7 @@ export const fmtDateTime = (iso: string) =>
   })
 
 export const facilityLabel = (f?: Facility | null) =>
-  f ? [f.name, [f.building, f.floor].filter(Boolean).join(' · ')].filter(Boolean).join(' — ') : 'Unknown facility'
+  f ? [f.name, [f.building, f.floor].filter(Boolean).join(' · ')].filter(Boolean).join(' — ') : tr('common.unknownFacility')
 
 /** The URL that a facility's QR code points to. */
 export const reportUrl = (facilityId: string) =>
@@ -41,10 +42,10 @@ export const byUrgency = (a: Report, b: Report) => urgencyRank[a.urgency] - urge
 export function compressImage(file: File, maxSize = 900, quality = 0.72): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('Hindi mabasa ang larawan.'))
+    reader.onerror = () => reject(new Error(tr('photo.errRead')))
     reader.onload = () => {
       const img = new Image()
-      img.onerror = () => reject(new Error('Hindi valid ang larawan.'))
+      img.onerror = () => reject(new Error(tr('photo.errInvalid')))
       img.onload = () => {
         const scale = Math.min(1, maxSize / Math.max(img.width, img.height))
         const canvas = document.createElement('canvas')

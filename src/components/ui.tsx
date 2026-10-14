@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useI18n, type TKey } from '../lib/i18n'
 import { statusStyle, urgencyStyle } from '../lib/utils'
 import type { Status, Urgency } from '../types'
 
@@ -12,16 +13,20 @@ export function Badge({ className = '', children }: { className?: string; childr
   )
 }
 
-export const UrgencyBadge = ({ value }: { value: Urgency }) => (
-  <Badge className={urgencyStyle[value]}>{value}</Badge>
-)
+export function UrgencyBadge({ value }: { value: Urgency }) {
+  const { t } = useI18n()
+  return <Badge className={urgencyStyle[value]}>{t(`urgency.${value}` as TKey)}</Badge>
+}
 
-export const StatusBadge = ({ value }: { value: Status }) => (
-  <Badge className={statusStyle[value]}>
-    <span className="h-1.5 w-1.5 rounded-full bg-current" />
-    {value}
-  </Badge>
-)
+export function StatusBadge({ value }: { value: Status }) {
+  const { t } = useI18n()
+  return (
+    <Badge className={statusStyle[value]}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {t(`status.${value}` as TKey)}
+    </Badge>
+  )
+}
 
 export function Card({ className = '', children }: { className?: string; children: ReactNode }) {
   return (

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle, CheckCircle2, Clock, Hammer, Wallet } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAuth } from '../lib/auth'
+import { useI18n, type TKey } from '../lib/i18n'
+
 import { useAdminData } from '../lib/useAdminData'
 import { byUrgency, fmtDateTime, peso } from '../lib/utils'
 import { Card, Empty, PageTitle, StatusBadge, UrgencyBadge } from '../components/ui'
@@ -33,8 +35,9 @@ function Stat({
 export default function Dashboard() {
   const { facilities, reports, repairs, loading } = useAdminData()
   const { role, fullName } = useAuth()
+  const { t } = useI18n()
   const isAdmin = role === 'admin'
-  const name = (id: string) => facilities.find((f) => f.id === id)?.name ?? 'Unknown'
+  const name = (id: string) => facilities.find((f) => f.id === id)?.name ?? t('common.unknown')
 
   const stats = useMemo(() => {
     const month = new Date().toISOString().slice(0, 7)
@@ -47,8 +50,12 @@ export default function Dashboard() {
   }, [reports, repairs])
 
   const byCategory = useMemo(
-    () => CATEGORIES.map((c) => ({ name: c, count: reports.filter((r) => r.category === c).length })),
-    [reports],
+    () =>
+      CATEGORIES.map((c) => ({
+        name: t(`category.${c}` as TKey),
+        count: reports.filter((r) => r.category === c).length,
+      })),
+    [reports, t],
   )
 
   const attention = useMemo(
@@ -56,25 +63,21 @@ export default function Dashboard() {
     [reports],
   )
 
-  if (loading) return <div className="font-bold text-slate-400">Loading…</div>
+  if (loading) return <div className="font-bold text-slate-400">{t('common.loading')}</div>
 
   return (
     <>
       <PageTitle
-        title="Dashboard"
-        subtitle={
-          isAdmin
-            ? 'Buod ng mga report at gastos sa maintenance.'
-            : `Kumusta, ${fullName}! Ito ang mga report na naka-assign sa’yo.`
-        }
+        title={t('dash.title')}
+        subtitle={isAdmin ? t('dash.subAdmin') : t('dash.subStaff', { name: fullName })}
       />
 
       <div className={`grid gap-4 sm:grid-cols-2 ${isAdmin ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
-        <Stat label="Pending" value={stats.pending} icon={<Clock />} tone="bg-amber-400 text-amber-950" />
-        <Stat label="In progress" value={stats.progress} icon={<Hammer />} tone="bg-sky-500 text-white" />
-        <Stat label="Resolved" value={stats.resolved} icon={<CheckCircle2 />} tone="bg-emerald-500 text-white" />
+        <Stat label={t('status.Pending')} value={stats.pending} icon={<Clock />} tone="bg-amber-400 text-amber-950" />
+        <Stat label={t('status.In Progress')} value={stats.progress} icon={<Hammer />} tone="bg-sky-500 text-white" />
+        <Stat label={t('status.Resolved')} value={stats.resolved} icon={<CheckCircle2 />} tone="bg-emerald-500 text-white" />
         {isAdmin && (
-          <Stat label="Gastos ngayong buwan" value={peso(stats.monthCost)} icon={<Wallet />} tone="bg-slate-900 text-white" />
+          <Stat label={t('dash.monthCost')} value={peso(stats.monthCost)} icon={<Wallet />} tone="bg-slate-900 text-white" />
         )}
       </div>
 
@@ -82,14 +85,14 @@ export default function Dashboard() {
         <Card className="xl:col-span-3">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-xl font-black">
-              <AlertTriangle className="text-rose-500" size={22} /> Kailangan ng aksyon
+              <AlertTriangle className="text-rose-500" size={22} /> {t('dash.attention')}
             </h2>
             <Link to="/admin/reports" className="text-sm font-black text-indigo-600 hover:underline">
-              Lahat →
+              {t('dash.viewAll')}
             </Link>
           </div>
           {attention.length === 0 ? (
-            <Empty>{isAdmin ? 'Walang bukas na report. 🎉' : 'Walang naka-assign sa’yo ngayon. 🎉'}</Empty>
+            <Empty>{isAdmin ? t('dash.emptyAdmin') : t('dash.emptyStaff')}</Empty>
           ) : (
             <ul className="space-y-3">
               {attention.map((r) => (
@@ -103,7 +106,7 @@ export default function Dashboard() {
                   </div>
                   <p className="mt-1 line-clamp-2 text-sm font-medium text-slate-600">{r.description}</p>
                   <div className="mt-2 text-xs font-bold text-slate-400">
-                    #{r.ticket} · {r.category} · {fmtDateTime(r.created_at)}
+                    #{r.ticket} · {t(`category.${r.category}` as TKey)} · {fmtDateTime(r.created_at)}
                   </div>
                 </li>
               ))}
@@ -112,7 +115,7 @@ export default function Dashboard() {
         </Card>
 
         <Card className="xl:col-span-2">
-          <h2 className="mb-5 text-xl font-black">Reports ayon sa uri</h2>
+          <h2 className="mb-5 text-xl font-black">{t('dash.byCategory')}</h2>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byCategory} layout="vertical" margin={{ left: 10 }}>
@@ -120,7 +123,7 @@ export default function Dashboard() {
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fontWeight: 700 }} />
                 <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 12, fontWeight: 700 }} />
                 <Tooltip cursor={{ fill: '#f1f5f9' }} />
-                <Bar dataKey="count" name="Reports" fill="#4f46e5" radius={[0, 12, 12, 0]} />
+                <Bar dataKey="count" name={t('dash.series')} fill="#4f46e5" radius={[0, 12, 12, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

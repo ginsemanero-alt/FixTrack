@@ -2,16 +2,11 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Camera, CheckCircle2, MapPin, Search, ShieldCheck, Wrench, X } from 'lucide-react'
 import { db } from '../lib/store'
+import { useI18n, type TKey } from '../lib/i18n'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { compressImage } from '../lib/utils'
 import { Button, Field, inputClass } from '../components/ui'
 import { CATEGORIES, URGENCIES, type Category, type Facility, type Urgency } from '../types'
-
-const urgencyHelp: Record<Urgency, string> = {
-  Low: 'Pwedeng ipagpaliban',
-  Medium: 'Kailangan ayusin soon',
-  High: 'Nakakaabala sa klase',
-  Critical: 'Delikado / emergency',
-}
 
 const urgencyActive: Record<Urgency, string> = {
   Low: 'bg-emerald-500 text-white shadow-emerald-500/30',
@@ -22,6 +17,7 @@ const urgencyActive: Record<Urgency, string> = {
 
 export default function ReportPage() {
   const { facilityId = '' } = useParams()
+  const { t } = useI18n()
   const [facility, setFacility] = useState<Facility | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'missing'>('loading')
 
@@ -64,7 +60,7 @@ export default function ReportPage() {
     e.preventDefault()
     if (!facility) return
     if (description.trim().length < 5) {
-      setError('Pakilagay ang detalye ng problema (kahit maikli).')
+      setError(t('rp.errDetails'))
       return
     }
     setBusy(true)
@@ -81,7 +77,7 @@ export default function ReportPage() {
       })
       setDone(report.ticket)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hindi na-submit. Subukan ulit.')
+      setError(err instanceof Error ? err.message : t('rp.errSubmit'))
     } finally {
       setBusy(false)
     }
@@ -104,28 +100,29 @@ export default function ReportPage() {
             </span>
             <span className="text-lg font-black tracking-tight">FixTrack</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <LanguageSwitcher />
             <Link
               to="/track"
               className="flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1.5 text-xs font-black hover:bg-white/30"
             >
-              <Search size={13} /> Track a report
+              <Search size={13} /> {t('common.trackReport')}
             </Link>
             <Link to="/login" className="text-xs font-bold text-white/70 hover:text-white">
-              Staff login
+              {t('common.staffLogin')}
             </Link>
           </div>
         </div>
 
         {state === 'loading' && (
-          <div className="rounded-[3.5rem] bg-white p-10 text-center font-bold text-slate-400">Loading…</div>
+          <div className="rounded-[3.5rem] bg-white p-10 text-center font-bold text-slate-400">{t('rp.loading')}</div>
         )}
 
         {state === 'missing' && (
           <div className="rounded-[3.5rem] bg-white p-10 text-center shadow-xl">
-            <h1 className="text-2xl font-black text-slate-900">Hindi mahanap ang lokasyon</h1>
+            <h1 className="text-2xl font-black text-slate-900">{t('rp.missingTitle')}</h1>
             <p className="mt-2 text-sm font-medium text-slate-500">
-              Maaaring luma o hindi na valid ang QR code. Sabihan ang maintenance office.
+              {t('rp.missingText')}
             </p>
           </div>
         )}
@@ -133,27 +130,27 @@ export default function ReportPage() {
         {state === 'ready' && facility && done && (
           <div className="rounded-[3.5rem] bg-white p-8 text-center shadow-xl sm:p-10">
             <CheckCircle2 className="mx-auto text-emerald-500" size={64} />
-            <h1 className="mt-4 text-3xl font-black text-slate-900">Na-report na!</h1>
+            <h1 className="mt-4 text-3xl font-black text-slate-900">{t('rp.doneTitle')}</h1>
             <p className="mt-2 text-sm font-medium text-slate-500">
-              Natanggap na ng maintenance team ang report mo para sa <b>{facility.name}</b>.
+              {t('rp.doneText', { facility: facility.name })}
             </p>
             <div className="mt-6 rounded-[2rem] bg-slate-100 p-5">
               <div className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                Ticket number
+                {t('rp.ticket')}
               </div>
               <div className="mt-1 font-mono text-3xl font-black tracking-widest text-indigo-600">{done}</div>
             </div>
             <p className="mt-3 text-xs font-semibold text-slate-400">
-              I-save ang number na ito para makita mo ang status ng report mo.
+              {t('rp.saveNote')}
             </p>
             <Link
               to={`/track/${encodeURIComponent(done)}`}
               className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-700 active:scale-95"
             >
-              <Search size={16} /> Track a report
+              <Search size={16} /> {t('common.trackReport')}
             </Link>
             <Button variant="ghost" onClick={reset} className="mt-3 w-full">
-              Mag-report ng isa pa
+              {t('rp.another')}
             </Button>
           </div>
         )}
@@ -164,19 +161,19 @@ export default function ReportPage() {
               <MapPin className="mt-0.5 shrink-0 text-indigo-600" size={22} />
               <div>
                 <div className="text-[11px] font-black uppercase tracking-wider text-indigo-400">
-                  Nagre-report para sa
+                  {t('rp.reportingFor')}
                 </div>
                 <div className="text-lg font-black leading-tight text-slate-900">{facility.name}</div>
                 <div className="text-xs font-semibold text-slate-500">
-                  {[facility.type, facility.building, facility.floor].filter(Boolean).join(' · ')}
+                  {[t(`ftype.${facility.type}` as TKey), facility.building, facility.floor].filter(Boolean).join(' · ')}
                 </div>
               </div>
             </div>
 
-            <h1 className="mb-5 text-2xl font-black tracking-tight text-slate-900">Anong sira?</h1>
+            <h1 className="mb-5 text-2xl font-black tracking-tight text-slate-900">{t('rp.what')}</h1>
 
             <div className="space-y-5">
-              <Field label="Uri ng problema">
+              <Field label={t('rp.type')}>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map((c) => (
                     <button
@@ -189,16 +186,16 @@ export default function ReportPage() {
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
-                      {c}
+                      {t(`category.${c}` as TKey)}
                     </button>
                   ))}
                 </div>
               </Field>
 
-              <Field label="Detalye">
+              <Field label={t('rp.details')}>
                 <textarea
                   className={`${inputClass} min-h-28 resize-y`}
-                  placeholder="Hal. Tumutulo ang gripo sa likod ng room…"
+                  placeholder={t('rp.detailsPh')}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={600}
@@ -206,7 +203,7 @@ export default function ReportPage() {
                 />
               </Field>
 
-              <Field label="Gaano kaurgent?">
+              <Field label={t('rp.urgencyQ')}>
                 <div className="grid grid-cols-2 gap-2">
                   {URGENCIES.map((u) => (
                     <button
@@ -219,16 +216,16 @@ export default function ReportPage() {
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
-                      <div className="text-sm font-black">{u}</div>
+                      <div className="text-sm font-black">{t(`urgency.${u}` as TKey)}</div>
                       <div className={`text-[11px] font-semibold ${urgency === u ? 'opacity-90' : 'text-slate-400'}`}>
-                        {urgencyHelp[u]}
+                        {t(`urgencyHelp.${u}` as TKey)}
                       </div>
                     </button>
                   ))}
                 </div>
               </Field>
 
-              <Field label="Larawan (optional)">
+              <Field label={t('rp.photo')}>
                 <input
                   ref={fileRef}
                   type="file"
@@ -247,7 +244,7 @@ export default function ReportPage() {
                         if (fileRef.current) fileRef.current.value = ''
                       }}
                       className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/70 text-white"
-                      aria-label="Remove photo"
+                      aria-label={t('rp.removePhoto')}
                     >
                       <X size={18} />
                     </button>
@@ -258,21 +255,21 @@ export default function ReportPage() {
                     onClick={() => fileRef.current?.click()}
                     className="flex w-full items-center justify-center gap-2 rounded-[2rem] border-2 border-dashed border-slate-300 py-6 text-sm font-black text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
                   >
-                    <Camera size={20} /> Kumuha / pumili ng larawan
+                    <Camera size={20} /> {t('rp.photoBtn')}
                   </button>
                 )}
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Pangalan (optional)">
+                <Field label={t('rp.name')}>
                   <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
                 </Field>
-                <Field label="Contact (optional)">
+                <Field label={t('rp.contact')}>
                   <input
                     className={inputClass}
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
-                    placeholder="Email / cellphone"
+                    placeholder={t('rp.contactPh')}
                   />
                 </Field>
               </div>
@@ -283,10 +280,10 @@ export default function ReportPage() {
             )}
 
             <Button type="submit" disabled={busy} className="mt-6 w-full py-4 text-base">
-              {busy ? 'Sinusubmit…' : 'I-submit ang report'}
+              {busy ? t('rp.submitting') : t('rp.submit')}
             </Button>
             <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-slate-400">
-              <ShieldCheck size={14} /> Hindi kailangan mag-login
+              <ShieldCheck size={14} /> {t('rp.noLogin')}
             </p>
           </form>
         )}

@@ -1,4 +1,5 @@
 import { hasSupabase, supabase } from './supabase'
+import { tr } from './i18n'
 import { addDemoStaff, demoStaffList, removeDemoStaff, resetDemoAccounts } from './auth'
 import type {
   Facility,
@@ -35,7 +36,6 @@ export interface ListReportsOptions {
   assignedTo?: string
 }
 
-const STAFF_ONLY_REMOTE = 'Sa Supabase, ginagawa ang staff accounts sa Authentication → Users.'
 
 // ───────────── Local (demo) backend ─────────────
 const KEYS = {
@@ -276,10 +276,10 @@ const remote = {
     return rows
   },
   async addStaff(_input: { email: string; password: string; fullName: string }): Promise<void> {
-    throw new Error(STAFF_ONLY_REMOTE)
+    throw new Error(tr('staff.remoteOnly'))
   },
   async removeStaff(_email: string): Promise<void> {
-    throw new Error(STAFF_ONLY_REMOTE)
+    throw new Error(tr('staff.remoteOnly'))
   },
   async addReport(input: NewReport) {
     // Anonymous users cannot read rows back (RLS), so don't chain .select() here.

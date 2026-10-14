@@ -20,6 +20,7 @@ are reported quickly. Staff track reports, repair history, and expenses in a das
 | Repair history | Timeline of repairs per facility, CSV export |
 | Expense tracking | Monthly chart, totals by facility and by problem type, yearly filter, CSV export, print |
 | Notifications | In-app alert and badge for staff when a new report arrives |
+| Languages | Bisaya, Tagalog, English, 日本語, Deutsch, Español, Français, 中文 (Simplified), हिन्दी (Hindi). Pick one from the language menu on any page; the choice is remembered per browser |
 
 ## Run it
 
@@ -51,6 +52,14 @@ With no `.env`, the app runs in **demo mode**: sample data is stored in the brow
 Unauthorized routes redirect to the Dashboard and the sidebar hides links the role cannot use.
 A signed-in user without a `profiles` row has no role and sees a "Walang access" screen.
 Reports are matched to maintenance staff by **`full_name`**, so keep names unique.
+
+## Languages
+
+The whole interface (public pages and the staff area) is translated. Tagalog is the default, which keeps the original Taglish wording.
+Translations live in `src/lib/locales/` (`en.ts` is the source of truth; every other file must define exactly the same keys,
+which TypeScript enforces). To add a language, copy `en.ts`, translate the values, then register it in `src/lib/i18n.ts`.
+Data that people typed (facility names, report descriptions, staff names) is shown as entered and is not translated.
+The machine-made translations should be reviewed by a native speaker before official use.
 
 ## Public ticket tracking
 

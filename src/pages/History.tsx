@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useAdminData } from '../lib/useAdminData'
 import { downloadCsv, fmtDate, peso } from '../lib/utils'
+import { useI18n } from '../lib/i18n'
+
 import { Badge, Button, Card, Empty, PageTitle, StatusBadge, UrgencyBadge, inputClass } from '../components/ui'
 
 export default function History() {
   const { facilities, reports, repairs, loading } = useAdminData()
+  const { t } = useI18n()
   const [facilityId, setFacilityId] = useState('all')
 
-  const name = (id: string) => facilities.find((f) => f.id === id)?.name ?? 'Unknown'
+  const name = (id: string) => facilities.find((f) => f.id === id)?.name ?? t('common.unknown')
 
   const repairRows = useMemo(
     () => repairs.filter((r) => facilityId === 'all' || r.facility_id === facilityId),
@@ -26,17 +29,17 @@ export default function History() {
     ])
   }
 
-  if (loading) return <div className="font-bold text-slate-400">Loading…</div>
+  if (loading) return <div className="font-bold text-slate-400">{t('common.loading')}</div>
 
   return (
     <>
       <PageTitle
-        title="Repair history"
-        subtitle="Kumpletong tala ng mga nakaraang sira at ayos kada facility."
+        title={t('hist.title')}
+        subtitle={t('hist.subtitle')}
         action={
           <div className="no-print flex gap-2">
             <select className={`${inputClass} !w-auto !rounded-full !bg-white`} value={facilityId} onChange={(e) => setFacilityId(e.target.value)}>
-              <option value="all">Lahat ng facility</option>
+              <option value="all">{t('hist.allFacilities')}</option>
               {facilities.map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.name}
@@ -44,7 +47,7 @@ export default function History() {
               ))}
             </select>
             <Button variant="dark" onClick={exportCsv} disabled={repairRows.length === 0}>
-              Export CSV
+              {t('common.exportCsv')}
             </Button>
           </div>
         }
@@ -53,11 +56,11 @@ export default function History() {
       <div className="grid gap-6 xl:grid-cols-5">
         <Card className="xl:col-span-3">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl font-black">Mga naayos na</h2>
+            <h2 className="text-xl font-black">{t('hist.done')}</h2>
             <Badge className="bg-slate-900 text-white ring-slate-900">{peso(total)}</Badge>
           </div>
           {repairRows.length === 0 ? (
-            <Empty>Wala pang repair record.</Empty>
+            <Empty>{t('hist.noRepairs')}</Empty>
           ) : (
             <ol className="relative space-y-5 border-l-4 border-slate-100 pl-6">
               {repairRows.map((r) => (
@@ -79,9 +82,9 @@ export default function History() {
         </Card>
 
         <Card className="xl:col-span-2">
-          <h2 className="mb-5 text-xl font-black">Lahat ng report</h2>
+          <h2 className="mb-5 text-xl font-black">{t('hist.allReports')}</h2>
           {reportRows.length === 0 ? (
-            <Empty>Walang report.</Empty>
+            <Empty>{t('hist.noReports')}</Empty>
           ) : (
             <ul className="space-y-3">
               {reportRows.slice(0, 30).map((r) => (

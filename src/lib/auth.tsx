@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { hasSupabase, supabase } from './supabase'
 import type { Role, Staff } from '../types'
+import { tr } from './i18n'
 
 interface AuthState {
   loading: boolean
@@ -55,12 +56,12 @@ export function addDemoStaff(input: { email: string; password: string; fullName:
   const email = input.email.trim().toLowerCase()
   const fullName = input.fullName.trim()
   if (!email || !fullName || input.password.length < 4) {
-    throw new Error('Kumpletuhin ang pangalan, email, at password (min. 4 na character).')
+    throw new Error(tr('auth.staffInvalid'))
   }
   const rows = getDemoAccounts()
-  if (rows.some((a) => a.email === email)) throw new Error('May account na gamit ang email na iyon.')
+  if (rows.some((a) => a.email === email)) throw new Error(tr('auth.emailTaken'))
   if (rows.some((a) => a.fullName.toLowerCase() === fullName.toLowerCase())) {
-    throw new Error('May staff na may ganoong pangalan. Gumamit ng ibang pangalan.')
+    throw new Error(tr('auth.nameTaken'))
   }
   saveDemoAccounts([...rows, { email, password: input.password, role: 'maintenance', fullName }])
 }
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthUser({ id: acct.email, email: acct.email })
         return null
       }
-      return 'Mali ang email o password.'
+      return tr('auth.badCreds')
     }
     const { error } = await supabase!.auth.signInWithPassword({ email, password })
     return error ? error.message : null

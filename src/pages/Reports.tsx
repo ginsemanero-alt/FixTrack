@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Hammer, Search, Trash2, User } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { db, onDataChange } from '../lib/store'
+import { useI18n, type TKey } from '../lib/i18n'
+
 import { useAdminData } from '../lib/useAdminData'
 import { byUrgency, fmtDateTime, facilityLabel } from '../lib/utils'
 import { Button, Card, Empty, Field, Modal, PageTitle, StatusBadge, UrgencyBadge, inputClass } from '../components/ui'
@@ -10,6 +12,7 @@ import { STATUSES, type Report, type Staff, type Status } from '../types'
 export default function Reports() {
   const { facilities, reports, refresh, loading } = useAdminData()
   const { role, fullName } = useAuth()
+  const { t } = useI18n()
   const isAdmin = role === 'admin'
   const [staff, setStaff] = useState<Staff[]>([])
   const [filter, setFilter] = useState<Status | 'All'>('All')
@@ -60,28 +63,23 @@ export default function Reports() {
 
   async function remove(r: Report) {
     if (!isAdmin) return
-    if (!confirm(`Burahin ang report #${r.ticket}?`)) return
+    if (!confirm(t('rep.deleteConfirm', { ticket: r.ticket }))) return
     await db.deleteReport(r.id)
     await refresh()
   }
 
-  if (loading) return <div className="font-bold text-slate-400">Loading…</div>
+  if (loading) return <div className="font-bold text-slate-400">{t('common.loading')}</div>
 
   return (
     <>
-      <PageTitle
-        title="Reports"
-        subtitle={
-          isAdmin ? 'Lahat ng na-report sa pamamagitan ng QR code.' : 'Mga report na naka-assign sa’yo.'
-        }
-      />
+      <PageTitle title={t('rep.title')} subtitle={isAdmin ? t('rep.subAdmin') : t('rep.subStaff')} />
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="relative min-w-60 flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             className={`${inputClass} !rounded-full !bg-white pl-11`}
-            placeholder="Hanapin ang ticket, lugar, detalye…"
+            placeholder={t('rep.search')}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -95,14 +93,14 @@ export default function Reports() {
                 filter === s ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-200'
               }`}
             >
-              {s}
+              {s === 'All' ? t('common.all') : t(`status.${s}` as TKey)}
             </button>
           ))}
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <Empty>{isAdmin ? 'Walang report na tumutugma.' : 'Walang naka-assign na report na tumutugma.'}</Empty>
+        <Empty>{isAdmin ? t('rep.none') : t('rep.noneStaff')}</Empty>
       ) : (
         <div className="space-y-4">
           {rows.map((r) => (
@@ -122,7 +120,7 @@ export default function Reports() {
                   <h3 className="mt-2 text-lg font-black text-slate-900">{facilityLabel(facility(r.facility_id))}</h3>
                   <p className="mt-1 text-sm font-medium text-slate-600">{r.description}</p>
                   <div className="mt-2 text-xs font-bold text-slate-400">
-                    {r.category} · {fmtDateTime(r.created_at)}
+                    {t(`category.${r.category}` as TKey)} · {fmtDateTime(r.created_at)}
                     {r.reporter_name && ` · ${r.reporter_name}`}
                     {r.reporter_contact && ` (${r.reporter_contact})`}
                   </div>
@@ -136,7 +134,9 @@ export default function Reports() {
                     disabled={r.status === 'Resolved'}
                   >
                     {STATUSES.map((s) => (
-                      <option key={s}>{s}</option>
+                      <option key={s} value={s}>
+                        {t(`status.${s}` as TKey)}
+                      </option>
                     ))}
                   </select>
                   {isAdmin ? (
@@ -148,7 +148,7 @@ export default function Reports() {
                         onChange={(e) => void assign(r, e.target.value)}
                         disabled={r.status === 'Resolved'}
                       >
-                        <option value="">— Hindi pa naka-assign —</option>
+                        <option value="">{t('rep.unassigned')}</option>
                         {/* keep a legacy / removed assignee visible so it is not silently dropped */}
                         {r.assigned_to && !staffNames.includes(r.assigned_to) && (
                           <option value={r.assigned_to}>{r.assigned_to}</option>
@@ -168,11 +168,11 @@ export default function Reports() {
                   <div className="flex gap-2">
                     {r.status !== 'Resolved' && (
                       <Button onClick={() => setRepairFor(r)} className="flex-1 !px-4 !py-2.5">
-                        <Hammer size={15} /> Resolve
+                        <Hammer size={15} /> {t('rep.resolve')}
                       </Button>
                     )}
                     {isAdmin && (
-                      <Button variant="danger" onClick={() => void remove(r)} className="!px-4 !py-2.5" aria-label="Delete">
+                      <Button variant="danger" onClick={() => void remove(r)} className="!px-4 !py-2.5" aria-label={t('rep.delete')}>
                         <Trash2 size={15} />
                       </Button>
                     )}
@@ -194,7 +194,7 @@ export default function Reports() {
         }}
       />
 
-      <Modal open={!!photoOpen} onClose={() => setPhotoOpen(null)} title="Larawan">
+      <Modal open={!!photoOpen} onClose={() => setPhotoOpen(null)} title={t('rep.photo')}>
         {photoOpen && <img src={photoOpen} alt="Report" className="w-full rounded-[2rem]" />}
       </Modal>
     </>
@@ -212,6 +212,7 @@ function RepairModal({
   onClose: () => void
   onSaved: () => Promise<void>
 }) {
+  const { t } = useI18n()
   const [description, setDescription] = useState('')
   const [cost, setCost] = useState('')
   const [technician, setTechnician] = useState('')
@@ -223,7 +224,7 @@ function RepairModal({
     e.preventDefault()
     if (!report) return
     const amount = Number(cost || 0)
-    if (!Number.isFinite(amount) || amount < 0) return setError('Hindi valid ang halaga.')
+    if (!Number.isFinite(amount) || amount < 0) return setError(t('rep.errAmount'))
     setBusy(true)
     setError(null)
     try {
@@ -241,19 +242,19 @@ function RepairModal({
       setTechnician('')
       await onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'May error.')
+      setError(err instanceof Error ? err.message : t('common.error'))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <Modal open={!!report} onClose={onClose} title="I-record ang repair">
+    <Modal open={!!report} onClose={onClose} title={t('rep.recordTitle')}>
       <form onSubmit={submit} className="space-y-4">
         <p className="text-sm font-medium text-slate-500">
-          Mamamarkahang <b>Resolved</b> ang report at mase-save sa repair history at expenses.
+          {t('rep.recordNote')}
         </p>
-        <Field label="Ano ang ginawa">
+        <Field label={t('rep.did')}>
           <textarea
             className={`${inputClass} min-h-20`}
             value={description}
@@ -262,7 +263,7 @@ function RepairModal({
           />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Gastos (₱)">
+          <Field label={t('rep.cost')}>
             <input
               type="number"
               min="0"
@@ -273,21 +274,21 @@ function RepairModal({
               placeholder="0.00"
             />
           </Field>
-          <Field label="Petsa">
+          <Field label={t('rep.date')}>
             <input type="date" className={inputClass} value={date} onChange={(e) => setDate(e.target.value)} required />
           </Field>
         </div>
-        <Field label="Technician / Contractor">
+        <Field label={t('rep.tech')}>
           <input
             className={inputClass}
             value={technician}
             onChange={(e) => setTechnician(e.target.value)}
-            placeholder={defaultTechnician || report?.assigned_to || 'Pangalan'}
+            placeholder={defaultTechnician || report?.assigned_to || t('rep.techPh')}
           />
         </Field>
         {error && <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600">{error}</div>}
         <Button type="submit" disabled={busy} className="w-full">
-          {busy ? 'Saving…' : 'I-save at i-resolve'}
+          {busy ? t('common.saving') : t('rep.saveResolve')}
         </Button>
       </form>
     </Modal>

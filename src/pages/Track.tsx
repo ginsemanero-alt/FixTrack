@@ -3,13 +3,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle2, Clock, Hammer, MapPin, Search, User, Wrench } from 'lucide-react'
 import { db, normalizeTicket } from '../lib/store'
 import { fmtDateTime } from '../lib/utils'
+import { useI18n, type TKey } from '../lib/i18n'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { Badge, Button, Field, StatusBadge, UrgencyBadge, inputClass } from '../components/ui'
 import type { Status, TrackedReport } from '../types'
 
-const steps: { status: Status; label: string; icon: typeof Clock }[] = [
-  { status: 'Pending', label: 'Natanggap', icon: Clock },
-  { status: 'In Progress', label: 'Inaayos', icon: Hammer },
-  { status: 'Resolved', label: 'Tapos na', icon: CheckCircle2 },
+const steps: { status: Status; icon: typeof Clock }[] = [
+  { status: 'Pending', icon: Clock },
+  { status: 'In Progress', icon: Hammer },
+  { status: 'Resolved', icon: CheckCircle2 },
 ]
 
 const stepTone: Record<Status, string> = {
@@ -18,17 +20,12 @@ const stepTone: Record<Status, string> = {
   Resolved: 'bg-emerald-500 text-white',
 }
 
-const blurb: Record<Status, string> = {
-  Pending: 'Natanggap na ang report mo. Hinihintay pang ma-assign o masimulan.',
-  'In Progress': 'Inaayos na ng maintenance team ang problema.',
-  Resolved: 'Naayos na! Salamat sa pag-report.',
-}
-
 type LookupState = 'idle' | 'loading' | 'found' | 'missing' | 'error'
 
 export default function Track() {
   const { ticket: param = '' } = useParams()
   const nav = useNavigate()
+  const { t } = useI18n()
   const [input, setInput] = useState(param)
   const [result, setResult] = useState<TrackedReport | null>(null)
   const [state, setState] = useState<LookupState>(param ? 'loading' : 'idle')
@@ -77,23 +74,26 @@ export default function Track() {
             </span>
             <span className="text-lg font-black tracking-tight">FixTrack</span>
           </div>
-          <Link to="/login" className="text-xs font-bold text-white/70 hover:text-white">
-            Staff login
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <LanguageSwitcher />
+            <Link to="/login" className="text-xs font-bold text-white/70 hover:text-white">
+              {t('common.staffLogin')}
+            </Link>
+          </div>
         </div>
 
         <form onSubmit={submit} className="rounded-[3.5rem] bg-white p-6 shadow-xl sm:p-9">
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">I-track ang report</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">{t('tr.title')}</h1>
           <p className="mt-1 text-sm font-medium text-slate-500">
-            Ilagay ang ticket number na natanggap mo pagkatapos mag-report.
+            {t('tr.subtitle')}
           </p>
           <div className="mt-5">
-            <Field label="Ticket number">
+            <Field label={t('tr.ticket')}>
               <input
                 className={`${inputClass} font-mono text-lg font-black uppercase tracking-widest`}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Hal. A1B2C3D4"
+                placeholder={t('tr.placeholder')}
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
@@ -102,25 +102,24 @@ export default function Track() {
             </Field>
           </div>
           <Button type="submit" disabled={state === 'loading'} className="mt-5 w-full py-4 text-base">
-            <Search size={18} /> {state === 'loading' ? 'Hinahanap…' : 'Hanapin'}
+            <Search size={18} /> {state === 'loading' ? t('tr.finding') : t('tr.find')}
           </Button>
         </form>
 
         {state === 'missing' && (
           <div className="mt-6 rounded-[3.5rem] bg-white p-8 text-center shadow-xl">
-            <h2 className="text-2xl font-black text-slate-900">Walang nahanap</h2>
+            <h2 className="text-2xl font-black text-slate-900">{t('tr.notFoundTitle')}</h2>
             <p className="mt-2 text-sm font-medium text-slate-500">
-              Walang report na may ticket na <b className="font-mono">{normalizeTicket(param)}</b>. Check ulit kung
-              tama ang pagkakasulat.
+              {t('tr.notFoundText', { ticket: normalizeTicket(param) })}
             </p>
           </div>
         )}
 
         {state === 'error' && (
           <div className="mt-6 rounded-[3.5rem] bg-white p-8 text-center shadow-xl">
-            <h2 className="text-2xl font-black text-slate-900">May problema</h2>
+            <h2 className="text-2xl font-black text-slate-900">{t('tr.errTitle')}</h2>
             <p className="mt-2 text-sm font-medium text-slate-500">
-              Hindi ma-check ang ticket ngayon. Subukan ulit mamaya.
+              {t('tr.errText')}
             </p>
           </div>
         )}
@@ -131,7 +130,7 @@ export default function Track() {
               <span className="font-mono text-2xl font-black tracking-widest text-indigo-600">{result.ticket}</span>
               <StatusBadge value={result.status} />
             </div>
-            <p className="mt-2 text-sm font-medium text-slate-500">{blurb[result.status]}</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">{t(`tr.blurb.${result.status}` as TKey)}</p>
 
             <ol className="mt-6 grid grid-cols-3 gap-2">
               {steps.map((s, i) => {
@@ -145,7 +144,7 @@ export default function Track() {
                     }`}
                   >
                     <Icon size={22} />
-                    <span className="text-[11px] font-black uppercase tracking-wider">{s.label}</span>
+                    <span className="text-[11px] font-black uppercase tracking-wider">{t(`tr.step.${s.status}` as TKey)}</span>
                   </li>
                 )
               })}
@@ -154,7 +153,7 @@ export default function Track() {
             <div className="mt-6 flex items-start gap-3 rounded-[2rem] bg-indigo-50 p-4">
               <MapPin className="mt-0.5 shrink-0 text-indigo-600" size={22} />
               <div>
-                <div className="text-[11px] font-black uppercase tracking-wider text-indigo-400">Lokasyon</div>
+                <div className="text-[11px] font-black uppercase tracking-wider text-indigo-400">{t('tr.location')}</div>
                 <div className="text-lg font-black leading-tight text-slate-900">{result.facility_name}</div>
                 <div className="text-xs font-semibold text-slate-500">
                   {[result.facility_building, result.facility_floor].filter(Boolean).join(' · ')}
@@ -164,21 +163,21 @@ export default function Track() {
 
             <dl className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-[2rem] bg-slate-50 p-4">
-                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">Uri</dt>
-                <dd className="mt-1 text-sm font-black text-slate-900">{result.category}</dd>
+                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">{t('tr.type')}</dt>
+                <dd className="mt-1 text-sm font-black text-slate-900">{t(`category.${result.category}` as TKey)}</dd>
               </div>
               <div className="rounded-[2rem] bg-slate-50 p-4">
-                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">Urgency</dt>
+                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">{t('tr.urgency')}</dt>
                 <dd className="mt-1">
                   <UrgencyBadge value={result.urgency} />
                 </dd>
               </div>
               <div className="col-span-2 rounded-[2rem] bg-slate-50 p-4">
-                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">Naka-assign kay</dt>
+                <dt className="text-[11px] font-black uppercase tracking-wider text-slate-400">{t('tr.assigned')}</dt>
                 <dd className="mt-1 flex items-center gap-2 text-sm font-black text-slate-900">
                   <User size={16} className="text-slate-400" />
                   {result.assigned_to || (
-                    <Badge className="bg-slate-100 text-slate-500 ring-slate-300">Hindi pa naka-assign</Badge>
+                    <Badge className="bg-slate-100 text-slate-500 ring-slate-300">{t('tr.unassigned')}</Badge>
                   )}
                 </dd>
               </div>
@@ -186,15 +185,15 @@ export default function Track() {
 
             <ul className="mt-4 space-y-2 text-sm font-bold text-slate-600">
               <li className="flex justify-between gap-3">
-                <span className="text-slate-400">Na-report</span>
+                <span className="text-slate-400">{t('tr.reported')}</span>
                 <span>{fmtDateTime(result.created_at)}</span>
               </li>
               <li className="flex justify-between gap-3">
-                <span className="text-slate-400">Huling update</span>
+                <span className="text-slate-400">{t('tr.updated')}</span>
                 <span>{fmtDateTime(result.updated_at)}</span>
               </li>
               <li className="flex justify-between gap-3">
-                <span className="text-slate-400">Naayos</span>
+                <span className="text-slate-400">{t('tr.resolved')}</span>
                 <span>{result.resolved_at ? fmtDateTime(result.resolved_at) : '—'}</span>
               </li>
             </ul>
